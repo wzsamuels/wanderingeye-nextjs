@@ -1,4 +1,4 @@
-type ProductType = {
+interface Product {
   _id: string
   name: string
   description: string
@@ -8,10 +8,11 @@ type ProductType = {
   reviews?: ProductReview[]
 }
 
-type ProductReview = {
+export interface ProductReview {
   title: string
   text: string
   stars: number
 }
 
-export default ProductType
+export default Product
+export type Products = Product[];
