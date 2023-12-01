@@ -1,11 +1,13 @@
 import {createContext, ReactNode, useContext, useEffect, useMemo, useState} from "react";
 import {CartItem} from "./models/cart";
 import Product from "./models/products";
+import {id} from "postcss-selector-parser";
 
 export interface ICartContext {
   cart: CartItem[];
   cartSize: number;
   addCartItem: (product: Product) => void
+  updateCartQuantity: ({productId, quantity} : {productId: string, quantity: number}) => void
 }
 
 export const CartContext = createContext<ICartContext | null>(null);
@@ -27,16 +29,28 @@ export default function CartProvider({children} : Props) {
   const addCartItem = (product: Product) => {
     let cartItem = cart.find(item => product._id === item.product._id);
     let newCart = [...cart]
-    console.log(cartItem)
+
     if(cartItem) {
       cartItem.quantity += 1;
+      // Update the cart by replacing the old item
       newCart = newCart.filter(item => item.product._id !== product._id)
     }
     else (
       cartItem = {quantity: 1, product: product}
     )
-    console.log(cartItem)
+
     setCart([...newCart, cartItem])
+  }
+
+  const updateCartQuantity = ({productId, quantity} : {productId: string, quantity: number}) => {
+    let cartItem = cart.find(item => item.product._id === productId);
+    if(!cartItem) return;
+    let newCart = [...cart]
+    cartItem.quantity = quantity
+    // Update the cart by replacing the old item
+    newCart = newCart.filter(item => item.product._id !== productId)
+    setCart([...newCart, cartItem])
+    console.log(newCart)
   }
 
   useEffect(() => {
@@ -46,7 +60,8 @@ export default function CartProvider({children} : Props) {
   const cartContext: ICartContext = {
     cart,
     addCartItem,
-    cartSize
+    cartSize,
+    updateCartQuantity
   }
 
   return (

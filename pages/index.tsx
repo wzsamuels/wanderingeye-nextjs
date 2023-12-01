@@ -4,7 +4,7 @@ import Link from "next/link";
 import LoadingSpinner from "../components/LoadingSpinner";
 import {ICartContext, useCart} from "../CartProvider";
 import {ErrorBoundary} from "react-error-boundary";
-import Button from "../ui/Button";
+import Button from "../components/ui/Button";
 import {endpoint, token} from "../graph-request";
 import { withUrqlClient } from 'next-urql';
 import { useQuery } from 'urql';

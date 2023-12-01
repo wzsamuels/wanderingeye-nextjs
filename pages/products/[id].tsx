@@ -2,14 +2,14 @@ import Image from "next/image";
 import Product, {ProductReview} from "../../models/products";
 import Star from "../../components/Star";
 import {ChangeEvent, SyntheticEvent, useEffect, useState} from "react";
-import Button from "../../ui/Button";
+import Button from "../../components/ui/Button";
 import { initUrqlClient } from 'next-urql';
 import {
   ssrExchange,
   dedupExchange,
   cacheExchange,
   fetchExchange,
-  useQuery
+  useQuery, useMutation
 } from 'urql';
 import {endpoint, token} from "../../graph-request";
 import {ErrorBoundary} from "react-error-boundary";
@@ -70,10 +70,6 @@ export async function getServerSideProps(ctx: { params: { id: string; }; }) {
   };
 }
 
-interface Props {
-  product: Product
-}
-
 const formFields = [
   {
     name: "title",
@@ -101,6 +97,7 @@ export default function ProductDetail() {
   const [form, setForm] = useState(formInitialState)
   const [starRating, setStarRating] = useState(0)
   const [res] = useQuery({query: GET_PRODUCT, variables: {id: id}})
+  const [addReviewResult, addReview] = useMutation(ADD_REVIEW)
   const product = res.data.productDatum
 
   useEffect(() => {
@@ -115,7 +112,14 @@ export default function ProductDetail() {
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault()
-
+    addReview({id: product._id, title: form.title, text: form.text, stars: starRating}).then(result => {
+      if(result.error) {
+        console.error("Error:", result.error)
+      }
+      else {
+        console.log("Success:", addReviewResult)
+      }
+    })
   }
 
   return (
@@ -149,12 +153,13 @@ export default function ProductDetail() {
               <p className={'py-6'}>{review.text}</p>
             </div>
             ) :
-            <h3 className={'text-3xl-res'}>No reviews yet!</h3>
+            <h3 className={'text-3xl-res py-6'}>No reviews yet!</h3>
           }
         </section>
-        <div>
+        <hr/>
+        <section className={'my-6'}>
           <form onSubmit={handleSubmit} className={'mx-auto max-w-[800px] flex flex-col items-center justify-center flex-wrap'}>
-            <h2>Create Review</h2>
+            <h2 className={'text-3xl-res'}>Add New Review</h2>
             {formFields.map(input =>
               <div className={'w-full my-4  flex items-center justify-center flex-wrap'} key={input.name}>
                 <label className={'py-4 pr-4 flex-grow flex-shrink-0 basis-[120px] max-w-[200px]'}>
@@ -188,12 +193,12 @@ export default function ProductDetail() {
           />
         ))}
       </span>
-            <p>
-              {starRating} of {5} stars
-            </p>
-            <Button className={''} type={'submit'}>Submit Review</Button>
+          <p>
+            {starRating} of {5} stars
+          </p>
+            <Button className={'my-4'} type={'submit'}>Submit Review</Button>
           </form>
-        </div>
+        </section>
       </div>
     </div>
   )
